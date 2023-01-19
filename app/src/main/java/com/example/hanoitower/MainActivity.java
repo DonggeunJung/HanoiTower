@@ -47,14 +47,14 @@ public class MainActivity extends AppCompatActivity implements JGameLib.GameEven
 
     void newGame() {
         int floorW = (floorMax+1) * 2;
-        int floowL = (towerMaxW - floorW) / 2;
+        int floorL = (towerMaxW - floorW) / 2;
         for(int i=0; i < floorMax; i++) {
-            JGameLib.Card floor = gameLib.addCardColor(Color.rgb(128,128,255), floowL, screenH-i*2-4, floorW, 2);
+            JGameLib.Card floor = gameLib.addCardColor(Color.rgb(128,128,255), floorL, screenH-i*2-4, floorW, 2);
             floor.edge(Color.rgb(64,64,255), 0.4);
             floor.set(floorMax-i);
             floors.get(0).push(floor);
             floorW -= 2;
-            floowL ++;
+            floorL ++;
         }
     }
 
