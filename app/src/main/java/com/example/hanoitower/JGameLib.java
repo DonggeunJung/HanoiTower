@@ -103,6 +103,7 @@ public class JGameLib extends View implements SensorEventListener {
         Paint pnt = new Paint();
         pnt.setStyle(Paint.Style.FILL);
         pnt.setAntiAlias(true);
+        checkRemoveCards();
 
         for(int i=0; i < cards.size(); i++) {
             Card card = cards.get(i);
@@ -942,6 +943,7 @@ public class JGameLib extends View implements SensorEventListener {
 
     public void removeCard(Card card) {
         removeCards.add(card);
+        needDraw = true;
     }
 
     public void set(String key, boolean b) {

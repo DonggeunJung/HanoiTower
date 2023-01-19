@@ -1,13 +1,11 @@
 package com.example.hanoitower;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -15,8 +13,8 @@ public class MainActivity extends AppCompatActivity implements JGameLib.GameEven
     final int towerMaxW = 14, screenW = towerMaxW*3, screenH = 17;
     JGameLib gameLib;
     int floorMax = 3, selTower = -1;
-    ArrayList<LinkedList<JGameLib.Card>> memo = new ArrayList();
-    JGameLib.Card[] towerRooms;
+    ArrayList<LinkedList<JGameLib.Card>> floors = new ArrayList();
+    JGameLib.Card[] towerRooms = new JGameLib.Card[3];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,13 +28,6 @@ public class MainActivity extends AppCompatActivity implements JGameLib.GameEven
     void initGame() {
         gameLib.listener(this);
         gameLib.setScreenGrid(screenW, screenH);
-        newGame();
-    }
-
-    void newGame() {
-        gameLib.clearMemory();
-        towerRooms = new JGameLib.Card[3];
-        memo = new ArrayList();
         gameLib.addCardColor(Color.BLACK);
         JGameLib.Card bar = gameLib.addCardColor(Color.rgb(204,102,0), 0,screenH-2,screenW,2);
         bar.edge(Color.rgb(153,76,0), 0.2);
@@ -45,42 +36,56 @@ public class MainActivity extends AppCompatActivity implements JGameLib.GameEven
             bar = gameLib.addCardColor(Color.rgb(204,102,0), barL,1,2,screenH-3);
             bar.edge(Color.rgb(153,76,0), 0.4);
             barL += towerMaxW;
-            memo.add(new LinkedList());
+            floors.add(new LinkedList());
             JGameLib.Card room = gameLib.addCardColor(Color.TRANSPARENT, i*towerMaxW, 0, towerMaxW, screenH-2);
             room.edge(Color.LTGRAY, 0.4);
             room.visible(false);
             towerRooms[i] = room;
         }
+        newGame();
+    }
+
+    void newGame() {
         int floorW = (floorMax+1) * 2;
         int floowL = (towerMaxW - floorW) / 2;
         for(int i=0; i < floorMax; i++) {
             JGameLib.Card floor = gameLib.addCardColor(Color.rgb(128,128,255), floowL, screenH-i*2-4, floorW, 2);
             floor.edge(Color.rgb(64,64,255), 0.4);
             floor.set(floorMax-i);
-            memo.get(0).push(floor);
+            floors.get(0).push(floor);
             floorW -= 2;
             floowL ++;
         }
     }
 
+    void removeFloors() {
+        for(int i=0; i < floors.size(); i++) {
+            while(!floors.get(i).isEmpty()) {
+                JGameLib.Card floor = floors.get(i).pop();
+                gameLib.removeCard(floor);
+            }
+        }
+    }
+
     boolean moveFloor(int from, int to) {
-        if(memo.get(from).size() < 1) return false;
-        int fromSize = memo.get(from).peek().getInt();
+        if(floors.get(from).size() < 1) return false;
+        int fromSize = floors.get(from).peek().getInt();
         int toSize = Integer.MAX_VALUE;
-        if(memo.get(to).size() > 0)
-            toSize = memo.get(to).peek().getInt();
+        if(floors.get(to).size() > 0)
+            toSize = floors.get(to).peek().getInt();
         if(fromSize < toSize) {
-            JGameLib.Card floor = memo.get(from).pop();
+            JGameLib.Card floor = floors.get(from).pop();
             int gapH = (to - from) * towerMaxW;
-            int gapV = (memo.get(from).size() - memo.get(to).size()) * 2;
+            int gapV = (floors.get(from).size() - floors.get(to).size()) * 2;
             floor.moveGap(gapH, gapV);
-            memo.get(to).push(floor);
+            floors.get(to).push(floor);
             return true;
         }
         return false;
     }
 
     public void onBtnRestart(View v) {
+        removeFloors();
         newGame();
     }
 
@@ -92,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements JGameLib.GameEven
             if(floorMax == 6) return;
             floorMax ++;
         }
+        removeFloors();
         newGame();
     }
 
@@ -110,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements JGameLib.GameEven
                     towerRooms[selTower].visible(false);
                     boolean res = moveFloor(selTower, tower);
                     selTower = -1;
-                    if(res && tower != 0 && memo.get(tower).size() == floorMax)
+                    if(res && tower != 0 && floors.get(tower).size() == floorMax)
                         gameLib.popupDialog(null, "Congratulation! You succeeded.", "Close");
                 }
             }
