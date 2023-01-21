@@ -1,5 +1,5 @@
 /* JGameLib_Java : 2D Game library for education      */
-/* Date : 2023.Jan.04 ~ 2023.Jan.18                   */
+/* Date : 2023.Jan.04 ~ 2023.Jan.20                   */
 /* Author : Dennis (Donggeun Jung)                    */
 /* Contact : topsan72@gmail.com                       */
 package com.example.hanoitower;
@@ -610,6 +610,10 @@ public class JGameLib extends View implements SensorEventListener {
 
         public boolean isResizing() {
             return unitW != 0 || unitH != 0;
+        }
+
+        public int imageIndex() {
+            return (int)this.idx;
         }
 
         public void imageChange(int idx) {
