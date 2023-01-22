@@ -1,5 +1,5 @@
 /* JGameLib_Java : 2D Game library for education      */
-/* Date : 2023.Jan.04 ~ 2023.Jan.20                   */
+/* Date : 2023.Jan.04 ~ 2023.Jan.22                   */
 /* Author : Dennis (Donggeun Jung)                    */
 /* Contact : topsan72@gmail.com                       */
 package com.example.hanoitower;
@@ -103,17 +103,21 @@ public class JGameLib extends View implements SensorEventListener {
         Paint pnt = new Paint();
         pnt.setStyle(Paint.Style.FILL);
         pnt.setAntiAlias(true);
-        checkRemoveCards();
+        ArrayList<Integer> removeIndices = new ArrayList<>();
 
         for(int i=0; i < cards.size(); i++) {
             Card card = cards.get(i);
             if(!card.visible) continue;
+            if(!removeCards.isEmpty() && removeCards.contains(card)) {
+                removeIndices.add(i);
+                continue;
+            }
             RectF scrRect = screenRect;
             if(card.dstRect != null) {
                 scrRect = getDstRect(card);
                 if(!checkCollision(scrRect, screenRect)) {
                     if(card.autoRemove)
-                        removeCards.add(card);
+                        removeIndices.add(i);
                     continue;
                 }
             }
@@ -129,30 +133,16 @@ public class JGameLib extends View implements SensorEventListener {
             if(card.text != null) {
                 drawText(canvas, pnt, scrRect, card);
             }
-            if(card.checkCollision) {
-                for(int j=i+1; j < cards.size(); j++) {
-                    Card card2 = cards.get(j);
-                    if(!card2.checkCollision) continue;
-                    if(checkCollision(card.dstRect, card2.dstRect)) {
-                        if(listener != null)
-                            listener.onGameCollision(card, card2);
-                    }
-                }
-            }
         }
-        checkRemoveCards();
+        checkRemoveCards(removeIndices);
     }
 
-    void checkRemoveCards() {
-        while(!removeCards.isEmpty()) {
-            for(int i=cards.size()-1; i >= 0; i--) {
-                Card card = cards.get(i);
-                if(removeCards.contains(card)) {
-                    removeCards.remove(card);
-                    cards.remove(i);
-                }
-            }
+    void checkRemoveCards(ArrayList<Integer> removeIndices) {
+        for (int i = removeIndices.size() - 1; i >= 0; i--) {
+            int idx = removeIndices.get(i);
+            cards.remove(idx);
         }
+        removeCards.clear();
     }
 
     void drawRect(Canvas canvas, Paint pnt, Card card, RectF dstRect) {
@@ -245,8 +235,18 @@ public class JGameLib extends View implements SensorEventListener {
         public boolean handleMessage(Message msg) {
             if (needDraw) {
                 needDraw = false;
-                for (Card card : cards) {
+                ArrayList<Card> collisionCards = new ArrayList<>();
+                for(int i=0; i < cards.size(); i++) {
+                    Card card = cards.get(i);
                     card.next();
+                    if(card.dstRect != null && card.checkCollision) {
+                        for(Card card2 : collisionCards) {
+                            if(checkCollision(card.dstRect, card2.dstRect) && listener != null) {
+                                listener.onGameCollision(card2, card);
+                            }
+                        }
+                        collisionCards.add(card);
+                    }
                 }
                 redraw();
             }
@@ -813,13 +813,13 @@ public class JGameLib extends View implements SensorEventListener {
     }
 
     public void deleteAllCards() {
-        removeCards = new HashSet();
+        removeCards.clear();
         for(int i = cards.size()-1; i >= 0; i--) {
             Card card = cards.get(i);
             card.deleteAllImages();
             card.bmp = null;
-            cards.remove(i);
         }
+        cards.clear();
     }
 
     public void popupDialog(String title, String description, String btnText1) {
