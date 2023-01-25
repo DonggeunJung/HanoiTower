@@ -105,10 +105,10 @@ public class MainActivity extends AppCompatActivity implements JGameLib.GameEven
     public void onGameWorkEnded(JGameLib.Card card, JGameLib.WorkType workType) {}
 
     @Override
-    public void onGameTouchEvent(JGameLib.Card card, int action, float blockX, float blockY) {
+    public void onGameTouchEvent(JGameLib.Card card, int action, float x, float y) {
         if(action == MotionEvent.ACTION_UP) {
-            int tower = (int) (blockX / towerMaxW);
-            if (blockY >= 0 && blockY <= screenH && tower >= 0 && tower < 3) {
+            int tower = (int) (x / towerMaxW);
+            if (y >= 0 && y <= screenH && tower >= 0 && tower < 3) {
                 if (selTower < 0) {
                     selTower = tower;
                     towerRooms[tower].visible(true);
@@ -130,5 +130,5 @@ public class MainActivity extends AppCompatActivity implements JGameLib.GameEven
     public void onGameCollision(JGameLib.Card card1, JGameLib.Card card2) {}
 
     @Override
-    public void onGameTimer(int what) {}
+    public void onGameTimer() {}
 }

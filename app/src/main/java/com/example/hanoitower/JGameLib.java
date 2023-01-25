@@ -258,13 +258,13 @@ public class JGameLib extends View implements SensorEventListener {
     Handler timer2 = new Handler(new Handler.Callback() {
         public boolean handleMessage(Message msg) {
             if(listener != null)
-                listener.onGameTimer(msg.what);
+                listener.onGameTimer();
             timer2.sendEmptyMessageDelayed(0, timerGap2);
             return false;
         }
     });
 
-    private RectF getDstRect(Card card) {
+    RectF getDstRect(Card card) {
         RectF rect = new RectF(0,0,0,0);
         if(card.dstRect == null) return rect;
         rect.left = screenRect.left + card.dstRect.left * blockSize;
@@ -274,11 +274,11 @@ public class JGameLib extends View implements SensorEventListener {
         return rect;
     }
 
-    private float getBlocksHorizontal(float pixelH) {
+    float getBlocksHorizontal(float pixelH) {
         return (pixelH-screenRect.left) / blockSize;
     }
 
-    private float getBlocksVertical(float pixelV) {
+    float getBlocksVertical(float pixelV) {
         return (pixelV-screenRect.top) / blockSize;
     }
 
@@ -304,19 +304,12 @@ public class JGameLib extends View implements SensorEventListener {
         return getBitmap(resid);
     }
 
-    int indexOf(Card card) {
-        for(int i = cards.size()-1; i >= 0; i--) {
-            if(cards.get(i) == card)
-                return i;
-        }
-        return -1;
-    }
-
     SharedPreferences getSharedPref() {
         if(sharedPref == null)
             sharedPref = getContext().getSharedPreferences(TAG, MODE_PRIVATE);
         return sharedPref;
     }
+
     SharedPreferences.Editor getSharedPrefEdit() {
         return getSharedPref().edit();
     }
@@ -349,6 +342,7 @@ public class JGameLib extends View implements SensorEventListener {
         boolean autoRemove = false;
         int valueN = 0;
         double valueF = 0;
+        boolean valueB = false;
         String valueS = "";
 
         Card(int clr, int type) {
@@ -447,6 +441,10 @@ public class JGameLib extends View implements SensorEventListener {
             needDraw = true;
         }
 
+        void loadBmp() {
+            bmp = loadBitmap(resids, idx);
+        }
+
         // Card API start ====================================
 
         public RectF sourceRect() {
@@ -498,10 +496,6 @@ public class JGameLib extends View implements SensorEventListener {
         public void visible(boolean s) {
             visible = s;
             needDraw = true;
-        }
-
-        public void loadBmp() {
-            bmp = loadBitmap(resids, idx);
         }
 
         public RectF screenRect() {
@@ -569,7 +563,7 @@ public class JGameLib extends View implements SensorEventListener {
             move(this.dstRect.left+(float)gapL, this.dstRect.top+(float)gapT);
         }
 
-        public void moveGap(double gapL, double gapT, double time) {
+        public void movingGap(double gapL, double gapT, double time) {
             moving(this.dstRect.left+(float)gapL, this.dstRect.top+(float)gapT, time);
         }
 
@@ -737,6 +731,10 @@ public class JGameLib extends View implements SensorEventListener {
             this.valueF = value;
         }
 
+        public void set(boolean value) {
+            this.valueB = value;
+        }
+
         public void set(String value) {
             this.valueS = value;
         }
@@ -747,6 +745,10 @@ public class JGameLib extends View implements SensorEventListener {
 
         public double getDouble() {
             return this.valueF;
+        }
+
+        public boolean getBoolean() {
+            return this.valueB;
         }
 
         public String getString() {
@@ -962,9 +964,9 @@ public class JGameLib extends View implements SensorEventListener {
         editor.commit();
     }
 
-    public void set(String key, float f) {
+    public void set(String key, double f) {
         SharedPreferences.Editor editor = getSharedPrefEdit();
-        editor.putFloat(key, f);
+        editor.putFloat(key, (float)f);
         editor.commit();
     }
 
@@ -992,13 +994,13 @@ public class JGameLib extends View implements SensorEventListener {
         return sp.getInt(key, n);
     }
 
-    public float getFloat(String key) {
-        return getFloat(key, 0f);
+    public float getDouble(String key) {
+        return getDouble(key, 0);
     }
 
-    public float getFloat(String key, float f) {
+    public float getDouble(String key, double f) {
         SharedPreferences sp = getSharedPref();
-        return sp.getFloat(key, f);
+        return sp.getFloat(key, (float)f);
     }
 
     public String getString(String key) {
@@ -1026,6 +1028,50 @@ public class JGameLib extends View implements SensorEventListener {
     public void stopTimer() {
         timer2.removeMessages(0);
     }
+
+    public int indexOf(Card card) {
+        for(int i = cards.size()-1; i >= 0; i--) {
+            if(cards.get(i) == card)
+                return i;
+        }
+        return -1;
+    }
+
+    public void playAudioBeep(int resid) {
+        if(audioBeeps.isEmpty()) return;
+        AudioBeep ab = audioBeeps.poll();
+        ab.play(resid);
+        audioBeeps.add(ab);
+    }
+
+    public void loadBGM(int resid) {
+        audioSourceId = resid;
+        stopBGM();
+    }
+
+    public void playBGM(int resid) {
+        loadBGM(resid);
+        playBGM();
+    }
+
+    public void playBGM() {
+        mPlayer.start();
+    }
+
+    public void pauseBGM() {
+        mPlayer.pause();
+    }
+
+    public void stopBGM() {
+        deleteBGM();
+        loadBGM();
+    }
+
+    public void audioAutoReplay(boolean autoPlay) {
+        audioAutoReply = autoPlay;
+    }
+
+    public void listener(GameEvent lsn) { listener = lsn; }
 
     // API end ====================================
 
@@ -1066,13 +1112,6 @@ public class JGameLib extends View implements SensorEventListener {
 
     // Audio play start ====================================
 
-    public void playAudioBeep(int resid) {
-        if(audioBeeps.isEmpty()) return;
-        AudioBeep ab = audioBeeps.poll();
-        ab.play(resid);
-        audioBeeps.add(ab);
-    }
-
     LinkedList<AudioBeep> audioBeeps = new LinkedList();
 
     class AudioBeep {
@@ -1104,11 +1143,6 @@ public class JGameLib extends View implements SensorEventListener {
     int audioSourceId = -1;
     boolean audioAutoReply = true;
 
-    public void loadBGM(int resid) {
-        audioSourceId = resid;
-        stopBGM();
-    }
-
     void loadBGM() {
         mPlayer = MediaPlayer.create(this.getContext(), audioSourceId);
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -1124,24 +1158,6 @@ public class JGameLib extends View implements SensorEventListener {
         });
     }
 
-    public void playBGM(int resid) {
-        loadBGM(resid);
-        playBGM();
-    }
-
-    public void playBGM() {
-        mPlayer.start();
-    }
-
-    public void pauseBGM() {
-        mPlayer.pause();
-    }
-
-    public void stopBGM() {
-        deleteBGM();
-        loadBGM();
-    }
-
     void deleteBGM() {
         if (mPlayer != null) {
             mPlayer.stop();
@@ -1150,24 +1166,18 @@ public class JGameLib extends View implements SensorEventListener {
         }
     }
 
-    public void audioAutoReplay(boolean autoPlay) {
-        audioAutoReply = autoPlay;
-    }
-
     // Audio play end ====================================
 
     // Interface start ====================================
 
-    private GameEvent listener = null;
-
-    public void listener(GameEvent lsn) { listener = lsn; }
+    GameEvent listener = null;
 
     interface GameEvent {
         void onGameWorkEnded(Card card, WorkType workType);
-        void onGameTouchEvent(Card card, int action, float blockX, float blockY);
+        void onGameTouchEvent(Card card, int action, float x, float y);
         void onGameSensor(int sensorType, float x, float y, float z);
         void onGameCollision(Card card1, Card card2);
-        void onGameTimer(int what);
+        void onGameTimer();
     }
 
     public enum WorkType {
