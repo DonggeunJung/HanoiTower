@@ -1,5 +1,5 @@
-/* JGameLib_Java : 2D Game library for education      */
-/* Date : 2023.Jan.04 ~ 2023.Jan.22                   */
+/* Mosaic v1.0 : 2D Game library for education        */
+/* Date : 2023.Jan.04 ~ 2023.Jan.26                   */
 /* Author : Dennis (Donggeun Jung)                    */
 /* Contact : topsan72@gmail.com                       */
 package com.example.hanoitower;
@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-public class JGameLib extends View implements SensorEventListener {
-    static String TAG = "JGameLib";
+public class Mosaic extends View implements SensorEventListener {
+    static String TAG = "Mosaic";
     boolean firstDraw = true;
     float totalPixelW = 480, totalPixelH = 800;
     float blocksW = 480, blocksH = 800;
@@ -51,7 +51,7 @@ public class JGameLib extends View implements SensorEventListener {
     HashSet<Card> removeCards = new HashSet();
     SharedPreferences sharedPref = null;
 
-    public JGameLib(Context context, @Nullable AttributeSet attrs) {
+    public Mosaic(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
