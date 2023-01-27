@@ -1,5 +1,5 @@
 /* Mosaic v1.0 : 2D Game library for education        */
-/* Date : 2023.Jan.04 ~ 2023.Jan.26                   */
+/* Date : 2023.Jan.04 ~ 2023.Jan.27                   */
 /* Author : Dennis (Donggeun Jung)                    */
 /* Contact : topsan72@gmail.com                       */
 package com.example.hanoitower;
@@ -1101,7 +1101,7 @@ public class Mosaic extends View implements SensorEventListener {
                 break;
         }
         if(listener != null) {
-            listener.onGameTouchEvent(card, event.getAction(), blockX, blockY);
+            listener.onGameTouchEvent(card, event.getAction(), blockX, blockY, event);
         }
         touchX = pixelX;
         touchY = pixelY;
@@ -1174,7 +1174,7 @@ public class Mosaic extends View implements SensorEventListener {
 
     interface GameEvent {
         void onGameWorkEnded(Card card, WorkType workType);
-        void onGameTouchEvent(Card card, int action, float x, float y);
+        void onGameTouchEvent(Card card, int action, float x, float y, MotionEvent event);
         void onGameSensor(int sensorType, float x, float y, float z);
         void onGameCollision(Card card1, Card card2);
         void onGameTimer();

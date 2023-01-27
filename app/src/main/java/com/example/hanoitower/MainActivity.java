@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements Mosaic.GameEvent 
     public void onGameWorkEnded(Mosaic.Card card, Mosaic.WorkType workType) {}
 
     @Override
-    public void onGameTouchEvent(Mosaic.Card card, int action, float x, float y) {
+    public void onGameTouchEvent(Mosaic.Card card, int action, float x, float y, MotionEvent event) {
         if(action == MotionEvent.ACTION_UP) {
             int tower = (int) (x / towerMaxW);
             if (y >= 0 && y <= screenH && tower >= 0 && tower < 3) {
