@@ -13,7 +13,7 @@ public class MainActivity extends AppCompatActivity implements Mosaic.GameEvent 
     final int towerMaxW = 14, screenW = towerMaxW*3, screenH = 17;
     Mosaic mosaic;
     int floorMax = 3, selTower = -1;
-    ArrayList<LinkedList<Mosaic.Card>> floors = new ArrayList();
+    ArrayList<LinkedList<Mosaic.Card>> towers = new ArrayList();
     Mosaic.Card[] towerRooms = new Mosaic.Card[3];
 
     @Override
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements Mosaic.GameEvent 
             bar = mosaic.addCardColor(Color.rgb(204,102,0), barL,1,2,screenH-3);
             bar.edge(Color.rgb(153,76,0), 0.4);
             barL += towerMaxW;
-            floors.add(new LinkedList());
+            towers.add(new LinkedList());
             Mosaic.Card room = mosaic.addCardColor(Color.TRANSPARENT, i*towerMaxW, 0, towerMaxW, screenH-2);
             room.edge(Color.LTGRAY, 0.4);
             room.visible(false);
@@ -52,33 +52,33 @@ public class MainActivity extends AppCompatActivity implements Mosaic.GameEvent 
             Mosaic.Card floor = mosaic.addCardColor(Color.rgb(128,128,255), floorL, screenH-i*2-4, floorW, 2);
             floor.edge(Color.rgb(64,64,255), 0.4);
             floor.set(floorMax-i);
-            floors.get(0).push(floor);
+            towers.get(0).push(floor);
             floorW -= 2;
             floorL ++;
         }
     }
 
     void removeFloors() {
-        for(int i=0; i < floors.size(); i++) {
-            while(!floors.get(i).isEmpty()) {
-                Mosaic.Card floor = floors.get(i).pop();
+        for(int i=0; i < towers.size(); i++) {
+            while(!towers.get(i).isEmpty()) {
+                Mosaic.Card floor = towers.get(i).pop();
                 mosaic.removeCard(floor);
             }
         }
     }
 
     boolean moveFloor(int from, int to) {
-        if(floors.get(from).size() < 1) return false;
-        int fromSize = floors.get(from).peek().getInt();
+        if(towers.get(from).size() < 1) return false;
+        int fromSize = towers.get(from).peek().getInt();
         int toSize = Integer.MAX_VALUE;
-        if(floors.get(to).size() > 0)
-            toSize = floors.get(to).peek().getInt();
+        if(towers.get(to).size() > 0)
+            toSize = towers.get(to).peek().getInt();
         if(fromSize < toSize) {
-            Mosaic.Card floor = floors.get(from).pop();
+            Mosaic.Card floor = towers.get(from).pop();
             int gapH = (to - from) * towerMaxW;
-            int gapV = (floors.get(from).size() - floors.get(to).size()) * 2;
+            int gapV = (towers.get(from).size() - towers.get(to).size()) * 2;
             floor.moveGap(gapH, gapV);
-            floors.get(to).push(floor);
+            towers.get(to).push(floor);
             return true;
         }
         return false;
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements Mosaic.GameEvent 
                     towerRooms[selTower].visible(false);
                     boolean res = moveFloor(selTower, tower);
                     selTower = -1;
-                    if(res && tower != 0 && floors.get(tower).size() == floorMax)
+                    if(res && tower != 0 && towers.get(tower).size() == floorMax)
                         mosaic.popupDialog(null, "Congratulation! You succeeded.", "Close");
                 }
             }
